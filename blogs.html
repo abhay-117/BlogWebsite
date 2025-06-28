@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Blogs</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        form {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            max-width: 600px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 18px;
+            font-size: 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #blogList {
+            list-style-type: none;
+            padding: 0;
+            max-width: 600px;
+        }
+
+        #blogList li {
+            background-color: white;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        #blogList b {
+            font-size: 16px;
+            color: #222;
+        }
+
+        .signout-btn {
+            background-color: #e53935;
+            float: right;
+        }
+
+        .signout-btn:hover {
+            background-color: #c62828;
+        }
+    </style>
+</head>
+<body>
+
+    <button class="signout-btn" onclick="window.location.href='signin.html'">Sign Out</button>
+
+    <h2>Create a Blog</h2>
+    <form id="blogForm">
+        <label>Title:
+            <input type="text" name="title" required>
+        </label>
+        <label>Content:
+            <textarea name="content" required></textarea>
+        </label>
+        <button type="submit">Create Blog</button>  
+    </form>
+
+    <h2>All Blogs</h2>
+    <ul id="blogList"></ul>
+
+    <script>
+        async function loadBlogs() {
+            const res = await fetch('http://localhost:3001/blogs');
+            const blogs = await res.json();
+            const list = document.getElementById('blogList');
+            list.innerHTML = '';
+            if (blogs.length === 0) {
+                list.innerHTML = '<li>No blogs yet.</li>';
+                return;
+            }
+            blogs.forEach(blog => {
+                const li = document.createElement('li');
+                li.innerHTML = `<b>${blog.title}</b><br><small>by User ${blog.userid}</small><br><br>${blog.content}`;
+                list.appendChild(li);
+            });
+        }
+
+        loadBlogs();
+
+        document.getElementById('blogForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const userid = localStorage.getItem('userid');
+            if (!userid) {
+                alert('Please sign in first.');
+                window.location.href = 'signin.html';
+                return;
+            }
+            const data = {
+                title: form.title.value,
+                content: form.content.value,
+                userid: Number(userid)
+            };
+            const res = await fetch('http://localhost:3001/create-blog', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json().catch(() => ({}));
+            if (res.ok) {
+                form.reset();
+                loadBlogs();
+            }
+        };
+    </script>
+</body>
+</html>

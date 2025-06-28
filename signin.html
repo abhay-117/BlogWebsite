@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sign In</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            width: 350px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            background-color: #4caf50;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .link-btn {
+            background-color: #e0e0e0;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        .link-btn:hover {
+            background-color: #ccc;
+        }
+
+        #result {
+            margin-top: 10px;
+            text-align: center;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Sign In</h2>
+        <form id="signinForm">
+            <label>Name:
+                <input type="text" name="name" required>
+            </label>
+            <label>Username:
+                <input type="text" name="username" required>
+            </label>
+            <label>Password:
+                <input type="password" name="password" required>
+            </label>
+            <button type="submit">Sign In</button>
+        </form>
+        <button class="link-btn" onclick="window.location.href='signup.html'">Go to Sign Up</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('signinForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                name: form.name.value,
+                username: form.username.value,
+                password: form.password.value
+            };
+            const res = await fetch('http://localhost:3001/signin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            try {
+                const result = await res.json();
+                if (res.ok && result.id) {
+                    localStorage.setItem('userid', result.id);
+                    window.location.href = 'blogs.html';
+                } else {
+                    document.getElementById('result').innerText = result.message || "Sign in failed.";
+                }
+            } catch {
+                document.getElementById('result').innerText = "Server error.";
+            }
+        };
+    </script>
+</body>
+</html>
